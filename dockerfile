@@ -1,6 +1,6 @@
 FROM python:3.9-slim
 
-# Install FFmpeg and ZIP (critical for frame extraction)
+# Install FFmpeg and ZIP
 RUN apt-get update && apt-get install -y ffmpeg zip
 
 # Install Python dependencies
