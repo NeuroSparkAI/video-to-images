@@ -1,46 +1,40 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, HTTPException
+import requests
 import os
 import uuid
-import magic  # For file type detection
+
+app = FastAPI()
 
 @app.post("/upload")
-async def upload_video(file: UploadFile = File(...)):
-    # Validate file type
-    file_content = await file.read()
-    file_type = magic.from_buffer(file_content, mime=True)
+async def upload_from_google_drive(file_url: str = None, file_id: str = None):
+    try:
+        # Determine file ID
+        if file_url:
+            file_id = file_url.split('/d/')[1].split('/view')[0]
+        
+        # Direct download link
+        download_url = f"https://drive.google.com/uc?id={file_id}"
+        
+        # Download file
+        response = requests.get(download_url, stream=True)
+        
+        # Generate unique filename
+        file_id = uuid.uuid4().hex
+        file_path = f"/tmp/uploads/{file_id}_video.mp4"
+        
+        # Ensure directory exists
+        os.makedirs("/tmp/uploads", exist_ok=True)
+        
+        # Save file
+        with open(file_path, "wb") as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+        
+        return {
+            "status": "File downloaded successfully",
+            "file_path": file_path,
+            "file_id": file_id
+        }
     
-    # Allowed video types
-    allowed_types = [
-        'video/mp4', 
-        'video/mpeg', 
-        'video/quicktime', 
-        'video/x-msvideo'
-    ]
-    
-    if file_type not in allowed_types:
-        raise HTTPException(status_code=400, detail="Invalid file type")
-    
-    # File size limit (e.g., 1GB)
-    max_size = 1 * 1024 * 1024 * 1024  # 1 GB
-    if len(file_content) > max_size:
-        raise HTTPException(status_code=413, detail="File too large")
-    
-    # Generate unique filename
-    file_id = uuid.uuid4().hex
-    file_path = f"/tmp/uploads/{file_id}_{file.filename}"
-    
-    # Ensure upload directory exists
-    os.makedirs("/tmp/uploads", exist_ok=True)
-    
-    # Save file
-    with open(file_path, "wb") as buffer:
-        buffer.write(file_content)
-    
-    return {
-        "filename": file.filename,
-        "file_id": file_id,
-        "file_type": file_type,
-        "size": len(file_content),
-        "path": file_path,
-        "status": "Video uploaded successfully"
-    }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
