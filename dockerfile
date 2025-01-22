@@ -1,16 +1,16 @@
 FROM python:3.9-slim
 
-# Install FFmpeg and ZIP
+# Install system dependencies (FFmpeg and ZIP)
 RUN apt-get update && apt-get install -y ffmpeg zip
 
 # Install Python dependencies
 RUN pip install fastapi uvicorn python-multipart
 
-# Copy code
+# Copy the application code
 COPY main.py /app/main.py
 
-# Set working directory
+# Set the working directory
 WORKDIR /app
 
-# Start the app
+# Start the FastAPI app
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
