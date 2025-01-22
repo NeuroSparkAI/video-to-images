@@ -1,12 +1,10 @@
-# Use a smaller base image
-FROM python:3.9-slim-buster
+FROM python:3.9-alpine
 
-# Minimize layers and reduce image size
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+# Install system dependencies
+RUN apk add --no-cache \
     ffmpeg \
     zip \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/cache/apk/*
 
 # Set working directory
 WORKDIR /app
@@ -14,13 +12,13 @@ WORKDIR /app
 # Upgrade pip
 RUN pip install --no-cache-dir --upgrade pip
 
-# Copy only requirements first
+# Copy requirements
 COPY requirements.txt .
 
-# Install dependencies in a single layer
+# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application files
+# Copy application
 COPY . .
 
 # Expose port
