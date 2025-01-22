@@ -1,10 +1,10 @@
 FROM python:3.9-slim
 
-# Install system dependencies (FFmpeg + ZIP)
+# Install FFmpeg and ZIP (critical for frame extraction)
 RUN apt-get update && apt-get install -y ffmpeg zip
 
-# Install Python packages
-RUN pip install --no-cache-dir fastapi uvicorn python-multipart
+# Install Python dependencies
+RUN pip install fastapi uvicorn python-multipart
 
 # Copy code
 COPY main.py /app/main.py
