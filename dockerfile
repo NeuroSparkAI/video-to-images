@@ -8,10 +8,10 @@ RUN apt-get update && apt-get install -y ffmpeg zip
 WORKDIR /app
 
 # Copy requirements
-COPY requirements.txt .
+COPY REQUIREMENTS.txt .
 
 # Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r REQUIREMENTS.txt
 
 # Final stage
 FROM python:3.9-slim
