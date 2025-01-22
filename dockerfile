@@ -12,16 +12,13 @@ WORKDIR /app
 # Upgrade pip
 RUN pip install --upgrade pip
 
-# Copy requirements first
-COPY requirements.txt .
+# Direct pip installation with verbose output
+RUN pip install --verbose fastapi uvicorn python-multipart
 
-# Install dependencies with maximum verbosity
-RUN pip install -r requirements.txt --verbose
-
-# Copy entire project
+# Copy project files
 COPY . .
 
-# Verify installations
+# Verify installation
 RUN pip list | grep fastapi
 RUN python -c "import fastapi; print(fastapi.__version__)"
 
