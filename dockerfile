@@ -1,4 +1,5 @@
-FROM python:3.9-slim
+# Build stage
+FROM python:3.9-slim AS builder
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y ffmpeg zip
@@ -6,11 +7,20 @@ RUN apt-get update && apt-get install -y ffmpeg zip
 # Set working directory
 WORKDIR /app
 
-# Copy requirements file
+# Copy requirements
 COPY requirements.txt .
 
-# Install Python dependencies
+# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Final stage
+FROM python:3.9-slim
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y ffmpeg zip
+
+# Copy installed packages from builder
+COPY --from=builder /usr/local/lib/python3.9/site-packages /usr/local/lib/python3.9/site-packages
 
 # Copy application files
 COPY main.py .
