@@ -1,39 +1,25 @@
-from fastapi import FastAPI, HTTPException
-import requests
-import os
-import uuid
-
-app = FastAPI()
+import gdown
 
 @app.post("/upload")
-async def upload_from_google_drive(file_url: str = None, file_id: str = None):
+async def upload_from_google_drive(file_url: str):
     try:
-        # Determine file ID
-        if file_url:
-            file_id = file_url.split('/d/')[1].split('/view')[0]
-        
-        # Direct download link
-        download_url = f"https://drive.google.com/uc?id={file_id}"
-        
-        # Download file
-        response = requests.get(download_url, stream=True)
+        # Extract file ID
+        file_id = file_url.split('/d/')[1].split('/view')[0]
         
         # Generate unique filename
-        file_id = uuid.uuid4().hex
-        file_path = f"/tmp/uploads/{file_id}_video.mp4"
+        unique_id = uuid.uuid4().hex
+        file_path = f"/tmp/uploads/{unique_id}_video.mp4"
         
         # Ensure directory exists
         os.makedirs("/tmp/uploads", exist_ok=True)
         
-        # Save file
-        with open(file_path, "wb") as f:
-            for chunk in response.iter_content(chunk_size=8192):
-                f.write(chunk)
+        # Download using gdown
+        gdown.download(f'https://drive.google.com/uc?id={file_id}', file_path, quiet=False)
         
         return {
             "status": "File downloaded successfully",
             "file_path": file_path,
-            "file_id": file_id
+            "file_id": unique_id
         }
     
     except Exception as e:
