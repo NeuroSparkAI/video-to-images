@@ -1,32 +1,32 @@
-# Build stage
-FROM python:3.9-slim AS builder
+FROM python:3.9-slim
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y ffmpeg zip
+RUN apt-get update && apt-get install -y \
+    ffmpeg \
+    zip \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
 
-# Copy requirements
-COPY REQUIREMENTS.txt .
+# Upgrade pip
+RUN pip install --upgrade pip
 
-# Install dependencies
-RUN pip install --no-cache-dir -r REQUIREMENTS.txt
+# Copy requirements first
+COPY requirements.txt .
 
-# Final stage
-FROM python:3.9-slim
+# Install dependencies with maximum verbosity
+RUN pip install -r requirements.txt --verbose
 
-# Install runtime dependencies
-RUN apt-get update && apt-get install -y ffmpeg zip
+# Copy entire project
+COPY . .
 
-# Copy installed packages from builder
-COPY --from=builder /usr/local/lib/python3.9/site-packages /usr/local/lib/python3.9/site-packages
-
-# Copy application files
-COPY main.py .
+# Verify installations
+RUN pip list | grep fastapi
+RUN python -c "import fastapi; print(fastapi.__version__)"
 
 # Expose port
 EXPOSE 80
 
-# Start the application
+# Startup command
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
