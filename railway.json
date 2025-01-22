@@ -2,7 +2,7 @@
     "version": 2,
     "build": {
         "maxCacheSizeMb": 500,
-        "timeout": 900,  # Increase build timeout to 15 minutes
+        "timeout": 900,  
         "builder": "dockerfile"
     },
     "deploy": {
